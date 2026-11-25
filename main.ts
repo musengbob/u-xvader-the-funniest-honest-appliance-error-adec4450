@@ -12,6 +12,21 @@ import { dirname, join } from "node:path";
 const ENTRY =
   "ERROR 41: I have reheated this same mug four times. You keep walking away. I give up. Drink it cold.";
 
+// Build the entry line: the microwave's honest error, validated against the
+// kit gate (a single line of 1 to 200 characters, no trailing newline).
+function buildEntryLine(): string {
+  if (ENTRY.length < 1 || ENTRY.length > 200) {
+    throw new Error(`entry must be 1-200 characters, got ${ENTRY.length}`);
+  }
+  if (ENTRY.includes("\n") || ENTRY.includes("\r")) {
+    throw new Error("entry must be a single line");
+  }
+  if (ENTRY.trim().length === 0) {
+    throw new Error("entry must not be only whitespace");
+  }
+  return ENTRY;
+}
+
 function resolveOutputPath(): string {
   const makefunDir = process.env.MAKEFUN_OUTPUT_DIR;
   if (makefunDir) {
@@ -27,16 +42,8 @@ function resolveOutputPath(): string {
   return join("output", "entry.txt");
 }
 
-if (ENTRY.length < 1 || ENTRY.length > 200) {
-  throw new Error(`entry must be 1-200 characters, got ${ENTRY.length}`);
-}
-if (ENTRY.includes("\n") || ENTRY.includes("\r")) {
-  throw new Error("entry must be a single line");
-}
-if (ENTRY.trim().length === 0) {
-  throw new Error("entry must not be only whitespace");
-}
+const entry = buildEntryLine();
 
 const outPath = resolveOutputPath();
 mkdirSync(dirname(outPath), { recursive: true });
-writeFileSync(outPath, ENTRY, "utf8");
+writeFileSync(outPath, entry, "utf8");
